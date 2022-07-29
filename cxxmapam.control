@@ -1,0 +1,4 @@
+comment = 'table access method using C++ std::map'
+default_version = '1.0'
+module_pathname = '$libdir/cxxmapam'
+relocatable = true

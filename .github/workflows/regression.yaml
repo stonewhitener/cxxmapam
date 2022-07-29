@@ -1,0 +1,56 @@
+name: Regression
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+jobs:
+  regression:
+    strategy:
+      matrix:
+        include:
+          - cc: gcc
+            cxx: g++
+          - cc: clang
+            cxx: clang++
+      fail-fast: true
+    runs-on: ubuntu-22.04
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get install postgresql-server-dev-14
+      - name: Install Clang
+        if: startsWith(matrix.cc, 'clang')
+        run: sudo apt-get install ${{ matrix.cc }}
+      - name: Install GCC
+        if: startsWith(matrix.cc, 'gcc')
+        run: sudo apt-get install ${{ matrix.cc }} ${{ matrix.cxx }}
+      - name: Prepare PostgreSQL
+        run: |
+          sudo systemctl start postgresql
+          sudo -i -u postgres psql -c "CREATE ROLE ${USER} WITH LOGIN SUPERUSER"
+          sudo -i -u postgres psql -c "CREATE DATABASE ${USER}"
+      - uses: actions/checkout@v3
+      - name: 'Run make && make install'
+        run: |
+          make USE_PGXS=1
+          sudo make install USE_PGXS=1
+      - name: Run make installcheck
+        id: installcheck
+        continue-on-error: true
+        run: make installcheck USE_PGXS=1
+      - name: Show error report
+        if: ${{ steps.installcheck.outcome == 'failure' }}
+        run: |
+          cat regression.diffs
+          exit 1

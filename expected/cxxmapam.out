@@ -1,0 +1,24 @@
+CREATE EXTENSION cxxmapam;
+CREATE TABLE cxxmap_tab (foo int, bar "char") USING cxxmap;
+SELECT * FROM cxxmap_tab;
+ foo | bar 
+-----+-----
+(0 rows)
+
+INSERT INTO cxxmap_tab VALUES (123, 'A');
+SELECT * FROM cxxmap_tab;
+ foo | bar 
+-----+-----
+ 123 | A
+(1 row)
+
+INSERT INTO cxxmap_tab VALUES (456, 'B');
+SELECT * FROM cxxmap_tab;
+ foo | bar 
+-----+-----
+ 123 | A
+ 456 | B
+(2 rows)
+
+-- Clean up
+DROP TABLE cxxmap_tab;
