@@ -7,6 +7,7 @@ Table access method for PostgreSQL using C++ `std::map` (educational purposes).
 - No index support
 - No transaction support
 - No logging and checkpointing
+- No multithread support
 
 ## Requirements
 
